@@ -1,0 +1,156 @@
+# Phase 1: Local Simulation - Zero Cost Docker Compose
+# ====================================================
+# This configuration simulates the production environment locally
+# with all components required for the dynamic memory caching system
+
+version: '3.8'
+
+services:
+  # Redis Cache Layer - Direct equivalent to ElastiCache/Memorystore
+  redis:
+    image: redis:7-alpine
+    container_name: prostudio-redis
+    command: >
+      redis-server
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1
+      --tcp-keepalive 60
+      --timeout 300
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:-prostudio_dev_password_change_in_prod}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prostudio-net
+    restart: unless-stopped
+
+  # ProStudio Application - The main caching service
+  app:
+    build:
+      context: ../..
+      dockerfile: deploy/zero-cost/Dockerfile
+    container_name: prostudio-app
+    environment:
+      # Application settings
+      - PROSTUDIO_ENV=development
+      - ENABLE_METRICS=true
+      - ENABLE_GPU=false
+      - API_WORKERS=2
+      - CACHE_TTL_SECONDS=3600
+      - MAX_MEMORY_MB=1024
+      - ENABLE_COMPRESSION=true
+      - ENABLE_PIPELINE=true
+      
+      # Redis configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-prostudio_dev_password_change_in_prod}
+      - REDIS_DB=0
+      
+      # API configuration
+      - API_KEY=${API_KEY:-dev_api_key_change_in_prod}
+      - SECRET_KEY=${SECRET_KEY:-dev_secret_key_change_in_prod}
+      
+      # Performance settings
+      - GUNICORN_WORKERS=2
+      - GUNICORN_THREADS=2
+      - GUNICORN_TIMEOUT=120
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - ./cache:/app/cache
+    networks:
+      - prostudio-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx Load Balancer - Simulates ALB/Cloud Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: prostudio-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - prostudio-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Local monitoring with Prometheus (can be removed to save resources)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prostudio-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - prostudio-net
+    profiles:
+      - monitoring
+
+  # Optional: Grafana for visualization (can be removed to save resources)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: prostudio-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    ports:
+      - "3000:3000"
+    networks:
+      - prostudio-net
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+
+volumes:
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  prostudio-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

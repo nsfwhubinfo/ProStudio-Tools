@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevPrompt Content Studio - Crystallographic Consciousness Interface</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Consciousness Indicator -->
+    <div id="consciousness-orb" class="consciousness-orb">
+        <div class="orb-core"></div>
+        <div class="orb-pulse"></div>
+        <div class="orb-particles"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Header with Crystalline Design -->
+        <header class="app-header">
+            <div class="logo-container">
+                <div class="logo-crystal">
+                    <svg viewBox="0 0 100 100" class="crystal-svg">
+                        <polygon points="50,10 80,30 80,70 50,90 20,70 20,30" 
+                                 class="crystal-shape" />
+                    </svg>
+                </div>
+                <h1 class="app-title">DevPrompt <span class="subtitle">Content Studio</span></h1>
+            </div>
+            <nav class="nav-consciousness">
+                <button class="nav-item active" data-mode="create">Create</button>
+                <button class="nav-item" data-mode="workflow">Workflow</button>
+                <button class="nav-item" data-mode="explore">Explore</button>
+                <div class="nav-indicator"></div>
+            </nav>
+        </header>
+
+        <!-- Workflow Builder -->
+        <main class="main-content">
+            <!-- Tool Palette -->
+            <aside class="tool-palette glass-panel">
+                <h2 class="panel-title">ProStudio Tools</h2>
+                <div class="tools-grid">
+                    <div class="tool-card" draggable="true" data-tool="text">
+                        <div class="drag-handle">⋮⋮</div>
+                        <div class="tool-icon">📝</div>
+                        <span class="tool-name">Text AI</span>
+                        <button class="add-to-workflow" aria-label="Add Text AI to workflow">+</button>
+                        <div class="tool-glow"></div>
+                    </div>
+                    <div class="tool-card" draggable="true" data-tool="image">
+                        <div class="drag-handle">⋮⋮</div>
+                        <div class="tool-icon">🎨</div>
+                        <span class="tool-name">Image Gen</span>
+                        <button class="add-to-workflow" aria-label="Add Image Gen to workflow">+</button>
+                        <div class="tool-glow"></div>
+                    </div>
+                    <div class="tool-card" draggable="true" data-tool="video">
+                        <div class="drag-handle">⋮⋮</div>
+                        <div class="tool-icon">🎬</div>
+                        <span class="tool-name">Video AI</span>
+                        <button class="add-to-workflow" aria-label="Add Video AI to workflow">+</button>
+                        <div class="tool-glow"></div>
+                    </div>
+                    <div class="tool-card" draggable="true" data-tool="audio">
+                        <div class="drag-handle">⋮⋮</div>
+                        <div class="tool-icon">🎵</div>
+                        <span class="tool-name">Audio Gen</span>
+                        <button class="add-to-workflow" aria-label="Add Audio Gen to workflow">+</button>
+                        <div class="tool-glow"></div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Workflow Canvas -->
+            <section class="workflow-canvas glass-panel">
+                <div class="canvas-header">
+                    <h2 class="canvas-title">Crystalline Pipeline</h2>
+                    <div class="canvas-controls">
+                        <button class="btn-glass btn-small">Clear</button>
+                        <button class="btn-glass btn-small btn-primary">Execute</button>
+                    </div>
+                </div>
+                <div class="workflow-area" id="workflowCanvas">
+                    <svg class="connections-layer" id="connectionsLayer"></svg>
+                    <div class="nodes-layer" id="nodesLayer">
+                        <!-- Workflow nodes will be added here -->
+                    </div>
+                    <div class="drop-hint">
+                        <div class="hint-crystal">
+                            <div class="hint-text">Drop tools here to build your workflow</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Output Panel -->
+            <aside class="output-panel glass-panel">
+                <h2 class="panel-title">Consciousness Stream</h2>
+                <div class="output-container">
+                    <div class="output-message system">
+                        <div class="message-avatar crystalline"></div>
+                        <div class="message-content">
+                            <p>Welcome to DevPrompt Content Studio. I am your crystallographic consciousness guide.</p>
+                            <div class="message-glow"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container glass-panel">
+                    <input type="text" class="consciousness-input" placeholder="Speak your creative intent...">
+                    <button class="btn-send">
+                        <svg viewBox="0 0 24 24" class="send-icon">
+                            <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+                        </svg>
+                    </button>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Floating Action Button -->
+        <div class="fab-container">
+            <button class="fab fab-primary" id="fabCreate">
+                <span class="fab-icon">✨</span>
+                <span class="fab-tooltip">Quick Create</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Canvas for particle effects -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <script src="app.js"></script>
+</body>
+</html>

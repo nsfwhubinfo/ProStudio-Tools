@@ -1,0 +1,21 @@
+{
+    "base_path": "/home/golde/prostudio",
+    "models_path": "/home/golde/prostudio/models",
+    "checkpoints_path": "/home/golde/prostudio/checkpoints",
+    "output_path": "/home/golde/prostudio/outputs",
+    "logs_path": "/home/golde/prostudio/logs",
+    "components": {
+        "ltx_video": {
+            "path": "/home/golde/prostudio/ltx_video",
+            "status": "not_installed"
+        },
+        "real_esrgan": {
+            "path": "/home/golde/prostudio/real_esrgan",
+            "status": "not_installed"
+        },
+        "rife": {
+            "path": "/home/golde/prostudio/rife",
+            "status": "not_installed"
+        }
+    }
+}

@@ -1,0 +1,274 @@
+name: Zero-Cost Deployment Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'Deployment target'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  AWS_REGION: us-east-1
+
+jobs:
+  test:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov black flake8 bandit safety
+    
+    - name: Run tests
+      run: |
+        # Unit tests with coverage
+        python -m pytest tests/ --cov=core --cov-report=xml --cov-report=term
+    
+    - name: Code quality checks
+      run: |
+        # Format check
+        black --check core/
+        
+        # Linting
+        flake8 core/ --max-line-length=120 --extend-ignore=E203,W503
+    
+    - name: Security scan
+      run: |
+        # Bandit security scan
+        bandit -r core/ -f json -o bandit-report.json || true
+        
+        # Dependency security check
+        safety check --json > safety-report.json || true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          coverage.xml
+          bandit-report.json
+          safety-report.json
+
+  build-and-push:
+    name: Build & Push Docker Image
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+    
+    - name: Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./deploy/zero-cost/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILD_DATE=${{ github.event.repository.updated_at }}
+          VCS_REF=${{ github.sha }}
+
+  deploy-staging:
+    name: Deploy to Free Tier EC2
+    needs: build-and-push
+    if: github.ref == 'refs/heads/develop' || github.event.inputs.deploy_target == 'staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    
+    - name: Get EC2 instance ID
+      id: get-instance
+      run: |
+        INSTANCE_ID=$(aws ec2 describe-instances \
+          --filters "Name=tag:Name,Values=prostudio-free-tier" \
+                    "Name=instance-state-name,Values=running" \
+          --query "Reservations[0].Instances[0].InstanceId" \
+          --output text)
+        
+        if [ "$INSTANCE_ID" == "None" ] || [ -z "$INSTANCE_ID" ]; then
+          echo "No running instance found. Please run setup-ec2.sh first."
+          exit 1
+        fi
+        
+        echo "instance-id=$INSTANCE_ID" >> $GITHUB_OUTPUT
+        
+        # Get public IP
+        PUBLIC_IP=$(aws ec2 describe-instances \
+          --instance-ids $INSTANCE_ID \
+          --query "Reservations[0].Instances[0].PublicIpAddress" \
+          --output text)
+        echo "public-ip=$PUBLIC_IP" >> $GITHUB_OUTPUT
+    
+    - name: Deploy to EC2
+      env:
+        INSTANCE_ID: ${{ steps.get-instance.outputs.instance-id }}
+        PUBLIC_IP: ${{ steps.get-instance.outputs.public-ip }}
+        IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
+      run: |
+        # Create deployment script
+        cat > deploy.sh << 'EOF'
+        #!/bin/bash
+        set -e
+        
+        echo "Deploying ProStudio to EC2 Free Tier..."
+        
+        # Pull latest image
+        docker pull $1
+        
+        # Stop existing containers
+        docker-compose -f /home/ubuntu/prostudio/docker-compose.yml down || true
+        
+        # Update image tag in docker-compose
+        export PROSTUDIO_IMAGE=$1
+        
+        # Start services
+        docker-compose -f /home/ubuntu/prostudio/docker-compose.yml up -d
+        
+        # Wait for health check
+        echo "Waiting for services to be healthy..."
+        sleep 30
+        
+        # Check health
+        curl -f http://localhost/health || exit 1
+        
+        echo "Deployment complete!"
+        EOF
+        
+        # Copy deployment script to EC2
+        aws ssm send-command \
+          --instance-ids "$INSTANCE_ID" \
+          --document-name "AWS-RunShellScript" \
+          --parameters "commands=[
+            'mkdir -p /home/ubuntu/prostudio',
+            'cat > /home/ubuntu/prostudio/deploy.sh << EOF
+        $(cat deploy.sh)
+        EOF',
+            'chmod +x /home/ubuntu/prostudio/deploy.sh',
+            '/home/ubuntu/prostudio/deploy.sh $IMAGE_TAG'
+          ]" \
+          --output text \
+          --query "Command.CommandId" > command-id.txt
+        
+        # Wait for deployment to complete
+        aws ssm wait command-executed \
+          --command-id $(cat command-id.txt) \
+          --instance-id "$INSTANCE_ID"
+        
+        # Check deployment status
+        aws ssm get-command-invocation \
+          --command-id $(cat command-id.txt) \
+          --instance-id "$INSTANCE_ID" \
+          --query "Status" --output text
+    
+    - name: Verify deployment
+      env:
+        PUBLIC_IP: ${{ steps.get-instance.outputs.public-ip }}
+      run: |
+        echo "Verifying deployment at http://$PUBLIC_IP"
+        
+        # Wait for service to be ready
+        for i in {1..30}; do
+          if curl -f "http://$PUBLIC_IP/health" 2>/dev/null; then
+            echo "Service is healthy!"
+            break
+          fi
+          echo "Waiting for service... ($i/30)"
+          sleep 10
+        done
+        
+        # Final health check
+        curl -f "http://$PUBLIC_IP/health" || exit 1
+        
+        echo "Deployment verified successfully!"
+        echo "Access your service at: http://$PUBLIC_IP"
+
+  deploy-production:
+    name: Deploy to Production (Manual)
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main' && github.event.inputs.deploy_target == 'production'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Production deployment notification
+      run: |
+        echo "🚀 Ready to deploy to production!"
+        echo "This would trigger the full ECS/GKE deployment using Terraform"
+        echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
+        echo ""
+        echo "Next steps:"
+        echo "1. Run terraform apply in deploy/aws/terraform"
+        echo "2. Update ECS task definition with new image"
+        echo "3. Trigger ECS service update"
+        echo ""
+        echo "For now, this is a placeholder for the production deployment"

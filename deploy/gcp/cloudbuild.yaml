@@ -1,0 +1,101 @@
+# Google Cloud Build configuration for ProStudio
+# =============================================
+
+steps:
+  # Run tests
+  - name: 'python:3.9'
+    id: 'run-tests'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov black flake8 bandit safety
+        
+        # Unit tests
+        python -m pytest tests/ --cov=core --cov-report=xml
+        
+        # Code quality
+        black --check core/
+        flake8 core/ --max-line-length=120
+        
+        # Security scan
+        bandit -r core/ -f json -o bandit-report.json
+        safety check --json > safety-report.json || true
+
+  # Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:${COMMIT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:latest'
+      - '.'
+
+  # Push to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}'
+
+  # Deploy to GKE
+  - name: 'gcr.io/cloud-builders/gke-deploy'
+    id: 'deploy-to-gke'
+    args:
+      - 'run'
+      - '--filename=deploy/gcp/k8s/'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:${COMMIT_SHA}'
+      - '--cluster=${_GKE_CLUSTER}'
+      - '--location=${_REGION}'
+      - '--namespace=${_NAMESPACE}'
+
+  # Run integration tests
+  - name: 'gcr.io/cloud-builders/kubectl'
+    id: 'integration-tests'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=${_REGION}'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=${_GKE_CLUSTER}'
+    args:
+      - 'run'
+      - 'integration-test-${SHORT_SHA}'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:${COMMIT_SHA}'
+      - '--rm'
+      - '-i'
+      - '--restart=Never'
+      - '--namespace=${_NAMESPACE}'
+      - '--'
+      - 'python'
+      - '-m'
+      - 'pytest'
+      - 'tests/integration/'
+
+# Substitution variables
+substitutions:
+  _REGION: 'us-central1'
+  _REPOSITORY: 'prostudio-production'
+  _IMAGE: 'prostudio'
+  _GKE_CLUSTER: 'prostudio-gke-production'
+  _NAMESPACE: 'prostudio-prod'
+
+# Build configuration
+options:
+  machineType: 'E2_HIGHCPU_8'
+  substitution_option: 'ALLOW_LOOSE'
+  logging: 'CLOUD_LOGGING_ONLY'
+
+# Timeout for the entire build
+timeout: '1800s'
+
+# Artifacts to store
+artifacts:
+  objects:
+    location: 'gs://${PROJECT_ID}-build-artifacts/${BUILD_ID}'
+    paths:
+      - 'bandit-report.json'
+      - 'safety-report.json'
+      - 'coverage.xml'

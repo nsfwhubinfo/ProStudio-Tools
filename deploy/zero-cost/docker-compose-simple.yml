@@ -1,0 +1,50 @@
+# Simple Docker Compose for testing
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: prostudio-redis
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prostudio-net
+
+  app:
+    build:
+      context: ../..
+      dockerfile: deploy/zero-cost/Dockerfile.simple
+    container_name: prostudio-app
+    environment:
+      - PROSTUDIO_ENV=development
+      - REDIS_HOST=redis
+      - PORT=8000
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks:
+      - prostudio-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: prostudio-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    networks:
+      - prostudio-net
+
+networks:
+  prostudio-net:
+    driver: bridge

@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+cache/
+
+# Model checkpoints (large files)
+checkpoints/
+*.pth
+*.ckpt
+*.safetensors
+
+# Output files
+outputs/
+*.mp4
+*.mp3
+*.png
+*.jpg
+*.jpeg
+
+# Database
+*.db
+*.sqlite
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+
+# Backup files
+*.backup
+*_backup/
+
+# Large binary files
+ltx_video/bin/
+natron/bin/
+openvoice/bin/
+real_esrgan/bin/
+rife/bin/
+rvc_next/bin/

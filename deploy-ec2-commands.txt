@@ -1,0 +1,24 @@
+# Commands to run on the EC2 instance (54.172.247.70)
+
+# 1. SSH into the instance:
+ssh -i /home/golde/prostudio/deploy/zero-cost/prostudio-key.pem ubuntu@54.172.247.70
+
+# 2. Once connected, run these commands:
+
+# Stop the test nginx container
+docker-compose down
+cd ~
+
+# Clone your ProStudio repository
+git clone https://github.com/nsfwhubinfo/ProStudio.git prostudio
+cd prostudio
+
+# Start ProStudio with Docker Compose
+docker-compose up -d
+
+# Check if it's running
+docker ps
+curl http://localhost/health
+
+# 3. Access from your browser:
+# http://54.172.247.70/health

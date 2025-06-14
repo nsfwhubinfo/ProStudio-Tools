@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@import "./crystalline.css";
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Base styles for dark theme */
+body {
+  background: var(--color-dark);
+  color: #ffffff;
+  min-height: 100vh;
+}

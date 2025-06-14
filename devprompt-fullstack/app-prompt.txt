@@ -1,0 +1,37 @@
+Build a production-ready AI content creation platform called DevPrompt Studio with these features:
+
+Frontend:
+- Modern, glassmorphic UI with crystalline design elements
+- Drag-and-drop workflow builder for connecting AI tools
+- Real-time progress indicators for long-running tasks
+- Multi-modal chat interface supporting text, image, video, audio
+- Dashboard showing project history and analytics
+- WebSocket support for live updates
+
+Backend:
+- RESTful API with OpenAPI documentation
+- WebSocket server for real-time updates
+- Job queue system for async content generation
+- File upload/download with S3-compatible storage
+- Comprehensive error handling and logging
+
+Authentication:
+- GitHub OAuth for developers
+- Google OAuth for general users
+- API key management for programmatic access
+
+Database:
+- User profiles and preferences
+- Content generation history
+- Workflow templates
+- Usage analytics and quotas
+
+API Endpoints:
+- POST /api/content/generate - Start content generation
+- GET /api/content/{id}/status - Check generation status
+- GET /api/content/{id}/result - Download result
+- POST /api/workflow/create - Save workflow
+- GET /api/workflow/list - List user workflows
+- POST /api/workflow/{id}/execute - Run saved workflow
+
+Include TypeScript, Tailwind CSS, shadcn/ui components, and Postgres with Prisma.

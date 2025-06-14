@@ -1,0 +1,89 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.pytest_cache
+.coverage
+htmlcov
+.tox
+.mypy_cache
+.ruff_cache
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Data files
+*.csv
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+data/
+
+# Temporary
+tmp/
+temp/
+cache/
+
+# Documentation
+docs/
+*.md
+
+# Testing
+tests/
+test/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Deployment
+deploy/
+terraform/
+k8s/
+
+# Large files
+*.tar
+*.tar.gz
+*.zip
+*.rar
+*.7z
+
+# Model files
+*.onnx
+*.pb
+*.pth
+*.pt
+*.h5
+models/
+checkpoints/

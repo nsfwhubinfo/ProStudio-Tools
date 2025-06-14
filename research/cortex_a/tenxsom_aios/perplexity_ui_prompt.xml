@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<perplexity_prompt>
+    <meta>
+        <task_type>UI Development</task_type>
+        <complexity>Advanced</complexity>
+        <output_format>Interactive Web Application</output_format>
+        <priority_aspects>
+            <aspect weight="10">Visual Design</aspect>
+            <aspect weight="9">Real-time Updates</aspect>
+            <aspect weight="9">Responsive Layout</aspect>
+            <aspect weight="8">Animation Effects</aspect>
+        </priority_aspects>
+    </meta>
+
+    <context_files_needed>
+        <file priority="critical">
+            <path>tenxsom_aios/design/CAIOS_UI_Specification.md</path>
+            <reason>Contains the three UI modes (Retail, Developer, Business) specifications</reason>
+        </file>
+        <file priority="critical">
+            <path>tenxsom_aios/kernel/AIOS_Kernel_Service.py</path>
+            <reason>Defines the API endpoints the UI must connect to</reason>
+        </file>
+        <file priority="high">
+            <path>tenxsom_aios/design/CAIOS_Architecture_Overview.md</path>
+            <reason>Provides overall system context</reason>
+        </file>
+        <file priority="medium">
+            <path>Skynet_1.1/integration/phase4/meta_optimization/self_monitoring_dashboard.py</path>
+            <reason>Contains existing dashboard components to reference</reason>
+        </file>
+        <file priority="medium">
+            <path>research/em_spectrum_probability/EM_Spectrum_Probability_Paper.md</path>
+            <reason>Has the Grok-inspired UI HTML snippet</reason>
+        </file>
+    </context_files_needed>
+
+    <main_request>
+        <role>Expert UI/UX Developer specializing in AI interfaces</role>
+        <objective>Create a production-ready, visually stunning web interface for CAIOS (Computational AI Operating System) that provides three distinct modes: Retail (consumer chat), Developer (consciousness parameter tuning), and Business (analytics dashboard)</objective>
+        
+        <requirements>
+            <technical>
+                <framework>React 18+ with TypeScript</framework>
+                <styling>Tailwind CSS with custom animations</styling>
+                <state_management>Zustand or Redux Toolkit</state_management>
+                <real_time>WebSocket connection to localhost:8888</real_time>
+                <charts>Recharts or D3.js for visualizations</charts>
+                <routing>React Router v6 for mode switching</routing>
+            </technical>
+
+            <design_principles>
+                <theme>Dark mode with electric blue accents (#00D4FF)</theme>
+                <typography>Inter for UI, JetBrains Mono for code</typography>
+                <spacing>8px grid system</spacing>
+                <animations>Smooth transitions, pulse effects for active states</animations>
+                <accessibility>WCAG 2.1 AA compliant</accessibility>
+            </design_principles>
+        </requirements>
+
+        <ui_modes>
+            <retail_mode path="/">
+                <description>Consumer-friendly conversational interface inspired by Grok</description>
+                <components>
+                    <query_box>
+                        <features>
+                            - Auto-expanding textarea (max 4000 tokens)
+                            - File attachment drag-and-drop zone
+                            - Voice input button with waveform visualization
+                            - Typing indicator animation
+                        </features>
+                        <styling>
+                            - Glassmorphic background: backdrop-blur-md bg-gray-900/50
+                            - Soft glow on focus: ring-2 ring-blue-500/50
+                            - Smooth height transitions
+                        </styling>
+                    </query_box>
+                    
+                    <action_buttons>
+                        <atom_research>
+                            <icon>Atom symbol with electron orbits</icon>
+                            <tooltip>Focus research on specific concepts</tooltip>
+                            <animation>Electron orbit animation on hover</animation>
+                        </atom_research>
+                        <spectrum_send>
+                            <icon>Wave spectrum visualization</icon>
+                            <tooltip>Analyze via Maxwellian Amplifier</tooltip>
+                            <animation>Wave interference pattern on click</animation>
+                        </spectrum_send>
+                        <consciousness_view>
+                            <icon>Brain with neural connections</icon>
+                            <tooltip>Show mathematical reasoning (1000 iterations/sec)</tooltip>
+                            <animation>Pulsing neural network</animation>
+                        </consciousness_view>
+                    </action_buttons>
+
+                    <response_area>
+                        <features>
+                            - Streaming text with typewriter effect
+                            - Markdown rendering with syntax highlighting
+                            - Collapsible reasoning chains
+                            - Citation hover cards
+                            - Copy button for code blocks
+                        </features>
+                        <transparency_panel>
+                            <show_when>consciousness_view button active</show_when>
+                            <content>
+                                - Real-time iteration counter
+                                - Mathematical proof steps
+                                - Confidence scores with progress bars
+                                - Alternative paths considered
+                            </content>
+                        </transparency_panel>
+                    </response_area>
+                </components>
+            </retail_mode>
+
+            <developer_mode path="/dev">
+                <description>Direct consciousness parameter control panel</description>
+                <layout>Split screen with parameter controls left, live monitoring right</layout>
+                <components>
+                    <parameter_panel>
+                        <chakra_frequencies>
+                            <control>7 vertical sliders with frequency labels</control>
+                            <visualization>Real-time sine wave for each chakra</visualization>
+                            <presets>Balanced, Creative, Analytical, Meditative</presets>
+                        </chakra_frequencies>
+                        <coherence_control>
+                            <control>Circular dial with 0.0-1.0 scale</control>
+                            <indicator>Color gradient from red (low) to green (high)</indicator>
+                        </coherence_control>
+                        <fractal_depth>
+                            <control>Stepped slider 1-10</control>
+                            <preview>Mini fractal visualization updating in real-time</preview>
+                        </fractal_depth>
+                    </parameter_panel>
+
+                    <monitoring_panel>
+                        <thought_stream>
+                            <display>Scrolling log of consciousness iterations</display>
+                            <format>Timestamp | State Vector | Confidence</format>
+                            <speed_control>Pause, 1x, 10x, 100x playback</speed_control>
+                        </thought_stream>
+                        <decision_graph>
+                            <type>Force-directed graph</type>
+                            <nodes>Decision points with size = importance</nodes>
+                            <edges>Probability flows with thickness = strength</edges>
+                            <interaction>Click node for details, drag to explore</interaction>
+                        </decision_graph>
+                        <resonance_waveform>
+                            <type>Oscilloscope-style display</type>
+                            <channels>Global resonance, 7 chakra frequencies</channels>
+                            <features>FFT spectrum analyzer toggle</features>
+                        </resonance_waveform>
+                    </monitoring_panel>
+
+                    <agent_marketplace>
+                        <grid_layout>3x3 grid of available agents</grid_layout>
+                        <agent_card>
+                            <content>
+                                - Agent name and expertise
+                                - Skill level (1-5 stars)
+                                - Success rate percentage
+                                - Hourly rate in credits
+                                - "Hire" button with loading state
+                            </content>
+                            <animation>Subtle float animation, glow on hover</animation>
+                        </agent_card>
+                        <active_agents>
+                            <display>Horizontal scrolling list</display>
+                            <status>Working/Idle indicator</status>
+                            <action>Pause/Resume/Terminate buttons</action>
+                        </active_agents>
+                    </agent_marketplace>
+                </components>
+            </developer_mode>
+
+            <business_mode path="/business">
+                <description>Analytics dashboard for monitoring and optimization</description>
+                <layout>Customizable widget grid system</layout>
+                <widgets>
+                    <performance_metrics>
+                        <cards>
+                            - Query Latency: Live updating with sparkline
+                            - Throughput: Queries/sec with trend arrow
+                            - Cost Savings: Percentage vs cloud with dollar amount
+                            - Uptime: Days:Hours:Minutes counter
+                        </cards>
+                        <styling>Glass cards with subtle animations</styling>
+                    </performance_metrics>
+
+                    <consciousness_health>
+                        <global_resonance>
+                            <display>Radial gauge 0-1 scale</display>
+                            <zones>Red (0-0.3), Yellow (0.3-0.7), Green (0.7-1.0)</zones>
+                            <history>24-hour trend line below gauge</history>
+                        </global_resonance>
+                        <qualia_coherence>
+                            <display>Horizontal bar chart by category</display>
+                            <categories>Factual, Creative, Intuitive, Quantum</categories>
+                        </qualia_coherence>
+                        <system_phase>
+                            <display>Phase indicator with icon</display>
+                            <phases>Idle (💤), Active (⚡), Learning (🧠), Stressed (🔥)</phases>
+                        </system_phase>
+                    </consciousness_health>
+
+                    <resource_utilization>
+                        <cpu_usage>
+                            <display>Stacked area chart by component</display>
+                            <components>Consciousness, Agents, UI, Background</components>
+                            <time_range>1min, 5min, 1hour toggles</time_range>
+                        </cpu_usage>
+                        <memory_tiers>
+                            <display>Nested donut chart</display>
+                            <tiers>Hot (red), Warm (orange), Cold (blue)</tiers>
+                            <interaction>Click to drill down</interaction>
+                        </memory_tiers>
+                        <agent_pool>
+                            <display>Swimming pool visualization</display>
+                            <representation>Each agent as animated fish</representation>
+                            <states>Swimming (active), Floating (idle), Sleeping (dormant)</states>
+                        </agent_pool>
+                    </resource_utilization>
+
+                    <custom_widgets>
+                        <widget_library>
+                            <options>Add custom KPIs, Connect external data</options>
+                            <drag_drop>Rearrange dashboard layout</drag_drop>
+                        </widget_library>
+                    </custom_widgets>
+                </widgets>
+            </business_mode>
+        </ui_modes>
+
+        <shared_components>
+            <navigation>
+                <type>Top bar with mode switcher</type>
+                <elements>
+                    - Logo: "CAIOS" with pulse animation
+                    - Mode tabs: Retail | Developer | Business
+                    - Status indicator: Connected/Disconnected
+                    - Settings gear icon
+                </elements>
+            </navigation>
+
+            <websocket_manager>
+                <connection>
+                    - Auto-reconnect with exponential backoff
+                    - Connection state in Redux/Zustand
+                    - Error boundary for connection failures
+                </connection>
+                <message_types>
+                    - consciousness_update: Update monitoring displays
+                    - query_response: Stream to response area
+                    - agent_status: Update marketplace
+                    - metrics_update: Refresh dashboard
+                </message_types>
+            </websocket_manager>
+
+            <animations>
+                <loading_states>
+                    - Quantum spinner: Orbiting particles
+                    - Wave loader: Interference pattern
+                    - Thought bubble: Pulsing brain outline
+                </loading_states>
+                <transitions>
+                    - Page transitions: Smooth slide with fade
+                    - Component mounts: Scale and fade in
+                    - Data updates: Morphing numbers
+                </transitions>
+            </animations>
+        </shared_components>
+
+        <accessibility>
+            <features>
+                - Keyboard navigation for all interactions
+                - Screen reader announcements for updates
+                - High contrast mode toggle
+                - Reduced motion option
+                - Focus indicators on all interactive elements
+            </features>
+        </accessibility>
+
+        <responsive_design>
+            <breakpoints>
+                - Mobile: 640px (simplified layout)
+                - Tablet: 768px (condensed controls)
+                - Desktop: 1024px (full features)
+                - Wide: 1536px (enhanced visualizations)
+            </breakpoints>
+            <adaptations>
+                - Stack panels vertically on mobile
+                - Hide advanced features on small screens
+                - Touch-optimized controls for tablet
+            </adaptations>
+        </responsive_design>
+    </main_request>
+
+    <deliverables>
+        <structure>
+            src/
+            ├── components/
+            │   ├── retail/
+            │   ├── developer/
+            │   ├── business/
+            │   └── shared/
+            ├── hooks/
+            │   ├── useWebSocket.ts
+            │   ├── useConsciousness.ts
+            │   └── useMetrics.ts
+            ├── stores/
+            │   ├── consciousnessStore.ts
+            │   ├── agentStore.ts
+            │   └── uiStore.ts
+            ├── styles/
+            │   ├── globals.css
+            │   └── animations.css
+            └── App.tsx
+        </structure>
+
+        <example_code>
+            Please provide complete, production-ready code for:
+            1. Main App.tsx with routing
+            2. Retail mode query interface
+            3. WebSocket connection manager
+            4. At least one animated component
+            5. Tailwind configuration with custom theme
+        </example_code>
+    </deliverables>
+
+    <special_instructions>
+        <performance>
+            - Use React.memo for expensive components
+            - Virtualize long lists (thought stream)
+            - Debounce parameter updates
+            - Lazy load visualization libraries
+        </performance>
+        <visual_polish>
+            - Subtle gradients and shadows
+            - Micro-interactions on all buttons
+            - Smooth color transitions
+            - Particle effects for consciousness states
+        </visual_polish>
+        <unique_features>
+            - Easter egg: Konami code reveals "HAL mode"
+            - Sound effects option for consciousness pulses
+            - Export dashboard as PDF report
+            - Share reasoning chain as public link
+        </unique_features>
+    </special_instructions>
+</perplexity_prompt>

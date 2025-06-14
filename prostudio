@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+"""
+ProStudio CLI
+=============
+
+Simple command-line interface for ProStudio.
+"""
+
+import sys
+import os
+
+# Add project to path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+def main():
+    if len(sys.argv) < 2:
+        print("""
+🚀 ProStudio SDK
+
+Usage:
+  prostudio demo          - Run interactive demo
+  prostudio sample        - Show sample output
+  prostudio server        - Start API server
+  prostudio test          - Test the engine
+  prostudio benchmark     - Run performance benchmark
+  prostudio help          - Show this help
+
+Quick start:
+  ./prostudio sample      - See what ProStudio can generate
+        """)
+        return
+    
+    command = sys.argv[1]
+    
+    if command == 'demo':
+        import quick_demo
+        quick_demo.main()
+    elif command == 'sample':
+        import demo_sample
+    elif command == 'server':
+        import api_server
+        api_server.main()
+    elif command == 'test':
+        import test_minimal
+    elif command == 'benchmark':
+        import run_benchmark_demo
+        run_benchmark_demo.main()
+    elif command == 'help':
+        main()
+    else:
+        print(f"Unknown command: {command}")
+        print("Run 'prostudio help' for usage")
+
+if __name__ == "__main__":
+    main()

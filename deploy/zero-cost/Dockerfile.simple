@@ -1,0 +1,37 @@
+# Simple Dockerfile for ProStudio Zero-Cost Testing
+# =================================================
+
+FROM python:3.9-slim
+
+# Install basic dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create user
+RUN useradd -m -u 1000 -s /bin/bash prostudio
+
+# Set working directory
+WORKDIR /app
+
+# Copy test files
+COPY deploy/zero-cost/test_api.py /app/
+COPY deploy/zero-cost/start.sh /app/
+RUN chmod +x /app/start.sh
+
+# Create directories
+RUN mkdir -p /app/logs /app/cache && \
+    chown -R prostudio:prostudio /app
+
+# Switch to non-root user
+USER prostudio
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run
+CMD ["/app/start.sh"]
